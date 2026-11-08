@@ -2,7 +2,7 @@ name = "auto-cron-trigger"
 main = "src/index.js"
 compatibility_date = "2026-10-01"
 
-# Every hour, on the hour (UTC)
+# Every hour, on the hour (UTC). For testing, use "* * * * *" (every minute).
 [triggers]
 crons = ["0 * * * *"]
 
