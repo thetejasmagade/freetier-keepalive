@@ -1,9 +1,12 @@
+import logging
 import re
 import time
 from concurrent.futures import ThreadPoolExecutor, wait
 
 from . import checkers, repo
 from .config import settings
+
+log = logging.getLogger(__name__)
 
 
 def _clean_error(exc: Exception, cfg: dict, checker) -> str:
@@ -62,8 +65,18 @@ def _run(services: list) -> list:
     return out
 
 
-def run_all(respect_gap: bool = False) -> dict:
-    """Check every enabled service now. Runs synchronously and returns a summary."""
+def run_all(respect_gap: bool = False, trigger: str = "manual") -> dict:
+    """Check every enabled service now, record the execution, and return the summary."""
+    start = time.monotonic()
+    out = _run_all(respect_gap)
+    try:
+        repo.add_run(trigger, out, int((time.monotonic() - start) * 1000))
+    except Exception:  # noqa: BLE001 - logging the run must not break the run itself
+        log.exception("Could not record run")
+    return out
+
+
+def _run_all(respect_gap: bool) -> dict:
     if respect_gap:
         since = repo.minutes_since_last_run()
         if since is not None and since < settings.min_run_gap_minutes:

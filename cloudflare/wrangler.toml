@@ -10,3 +10,17 @@ crons = ["0 * * * *"]
 APP_URL = "https://your-app.onrender.com"
 
 # RUN_TOKEN is a secret - set it with: npx wrangler secret put RUN_TOKEN
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+invocation_logs = true
+persist = true
+
+[observability.traces]
+enabled = false
+head_sampling_rate = 1
+persist = true
+
+[observability.issue_detection]
+enabled = true

@@ -83,6 +83,27 @@ def latest_results() -> dict:
     return out
 
 
+# ---- run log (last N executions) ------------------------------------------
+
+def add_run(trigger: str, output: dict, duration_ms: int) -> None:
+    with connect() as c:
+        c.execute(
+            """INSERT INTO runs (trigger, status, reason, checked, failed, duration_ms, output)
+               VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+            (trigger, output["status"], output.get("reason"), output.get("checked", 0),
+             len(output.get("failed", [])), duration_ms, Jsonb(output)),
+        )
+        c.execute(
+            "DELETE FROM runs WHERE id NOT IN (SELECT id FROM runs ORDER BY id DESC LIMIT %s)",
+            (settings.history,),
+        )
+
+
+def recent_runs():
+    with connect() as c:
+        return c.execute("SELECT * FROM runs ORDER BY id DESC LIMIT %s", (settings.history,)).fetchall()
+
+
 # ---- meta / run lock ------------------------------------------------------
 
 def set_last_run_now() -> None:

@@ -66,4 +66,40 @@
 </table>
 </div>
 {% endif %}
+
+<h2>Last {{ runs|length }} execution{{ 's' if runs|length != 1 }}</h2>
+{% if not runs %}
+  <p class="muted">No executions yet. They appear here after the cron or "Run all now" runs.</p>
+{% else %}
+<div class="table-wrap">
+<table class="runs">
+  <thead>
+    <tr><th>Started</th><th>Trigger</th><th>Status</th><th>Checked</th><th>Failed</th><th>Duration</th><th>Output</th></tr>
+  </thead>
+  <tbody>
+  {% for run in runs %}
+    <tr>
+      <td>{{ run.started_at|tss }}</td>
+      <td><span class="badge">{{ run.trigger }}</span></td>
+      <td>
+        {% if run.status == 'skipped' %}<span class="badge pending">skipped</span>
+        {% elif run.failed %}<span class="badge fail">done</span>
+        {% else %}<span class="badge ok">done</span>{% endif %}
+        {% if run.reason %}<br><span class="muted">{{ run.reason }}</span>{% endif %}
+      </td>
+      <td>{{ run.checked }}</td>
+      <td class="{{ 'err' if run.failed }}">{{ run.failed }}</td>
+      <td>{{ run.duration_ms }} ms</td>
+      <td>
+        <details>
+          <summary>View JSON</summary>
+          <pre>{{ run.output|tojson(indent=2) }}</pre>
+        </details>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endif %}
 {% endblock %}

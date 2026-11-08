@@ -53,3 +53,13 @@ th { color: var(--muted); font-size: .8em; font-weight: 600; text-transform: upp
 tr.disabled td { opacity: .55; }
 .actions { white-space: nowrap; }
 .types { list-style: none; padding: 0; display: grid; gap: 8px; }
+.nav-right { display: flex; align-items: center; gap: 16px; }
+.nav-right form { margin: 0; }
+.clock { font-variant-numeric: tabular-nums; color: var(--muted); font-size: .9em; white-space: nowrap; }
+h2 { font-size: 1.1rem; margin: 28px 0 10px; }
+table.runs td { white-space: nowrap; }
+table.runs td:last-child { white-space: normal; min-width: 120px; }
+details summary { cursor: pointer; color: var(--accent); }
+details pre { margin: 8px 0 0; padding: 10px; max-width: 520px; max-height: 320px; overflow: auto;
+              background: var(--bg); border: 1px solid var(--line); border-radius: 6px; font-size: .8em;
+              white-space: pre-wrap; word-break: break-word; }

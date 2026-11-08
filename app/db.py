@@ -23,6 +23,17 @@ CREATE TABLE IF NOT EXISTS results (
     checked_at  timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS results_service_idx ON results (service_id, id DESC);
+CREATE TABLE IF NOT EXISTS runs (
+    id           bigserial PRIMARY KEY,
+    trigger      text NOT NULL,              -- cron | manual
+    status       text NOT NULL,              -- done | skipped
+    reason       text,
+    checked      int NOT NULL DEFAULT 0,
+    failed       int NOT NULL DEFAULT 0,
+    duration_ms  int,
+    output       jsonb NOT NULL,             -- the JSON summary the run returned
+    started_at   timestamptz NOT NULL DEFAULT now()
+);
 CREATE TABLE IF NOT EXISTS meta (
     key    text PRIMARY KEY,
     value  text

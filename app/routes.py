@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 import psycopg
 from flask import (Blueprint, abort, flash, jsonify, redirect, render_template,
@@ -22,6 +22,16 @@ def _ts(value):
     return value.strftime("%Y-%m-%d %H:%M UTC") if value else "never"
 
 
+@bp.app_template_filter("tss")
+def _tss(value):
+    return value.strftime("%Y-%m-%d %H:%M:%S UTC") if value else "-"
+
+
+@bp.app_context_processor
+def _utc_now():
+    return {"utc_now": datetime.now(timezone.utc)}
+
+
 # ---- public ---------------------------------------------------------------
 
 @bp.get("/health")
@@ -34,7 +44,7 @@ def cron_run():
     """Called hourly by the Cloudflare Worker cron. Runs all checks and replies when done."""
     if not token_ok():
         abort(401)
-    return jsonify(runner.run_all(respect_gap=True))
+    return jsonify(runner.run_all(respect_gap=True, trigger="cron"))
 
 
 @bp.route("/login", methods=["GET", "POST"])
@@ -78,13 +88,14 @@ def index():
     next_due = last_run + timedelta(minutes=settings.run_interval_minutes) if last_run else None
     counts = {k: sum(1 for r in rows if r["status"] == k) for k in ("ok", "fail", "pending", "disabled")}
     return render_template("dashboard.html", rows=rows, failing=failing,
-                           last_run=last_run, next_due=next_due, counts=counts)
+                           last_run=last_run, next_due=next_due, counts=counts,
+                           runs=repo.recent_runs())
 
 
 @bp.post("/run")
 @login_required
 def run_all_now():
-    out = runner.run_all()
+    out = runner.run_all(trigger="manual")
     if out["status"] == "skipped":
         flash("Run skipped: " + out["reason"], "error")
     else:

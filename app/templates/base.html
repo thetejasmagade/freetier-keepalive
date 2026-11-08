@@ -9,13 +9,26 @@
 <body>
   <header>
     <a class="brand" href="{{ url_for('main.index') }}">Auto-Cron</a>
-    {% if session.get('admin') %}
-    <form method="post" action="{{ url_for('main.logout') }}">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button class="link">Log out</button>
-    </form>
-    {% endif %}
+    <div class="nav-right">
+      <span class="clock" title="Current UTC time">
+        <span id="utc-clock">{{ utc_now.strftime('%Y-%m-%d %H:%M:%S') }}</span> UTC
+      </span>
+      {% if session.get('admin') %}
+      <form method="post" action="{{ url_for('main.logout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="link">Log out</button>
+      </form>
+      {% endif %}
+    </div>
   </header>
+  <script>
+    (function () {
+      var el = document.getElementById("utc-clock");
+      function tick() { el.textContent = new Date().toISOString().slice(0, 19).replace("T", " "); }
+      tick();
+      setInterval(tick, 1000);
+    })();
+  </script>
   <main>
     {% for category, message in get_flashed_messages(with_categories=true) %}
       <div class="flash {{ category }}">{{ message }}</div>
