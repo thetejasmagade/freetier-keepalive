@@ -1,0 +1,12 @@
+name = "auto-cron-trigger"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+# Every hour, on the hour (UTC)
+[triggers]
+crons = ["0 * * * *"]
+
+[vars]
+APP_URL = "https://your-app.onrender.com"
+
+# RUN_TOKEN is a secret - set it with: npx wrangler secret put RUN_TOKEN

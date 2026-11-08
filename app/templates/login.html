@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Log in - Auto-Cron{% endblock %}
+{% block content %}
+<form method="post" class="card narrow">
+  <h1>Log in</h1>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label>Password
+    <input type="password" name="password" autofocus required>
+  </label>
+  <button class="primary">Log in</button>
+</form>
+{% endblock %}

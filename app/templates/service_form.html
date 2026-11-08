@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if editing else 'Add' }} service - Auto-Cron{% endblock %}
+{% block content %}
+<form method="post" class="card">
+  <h1>{{ 'Edit' if editing else 'Add' }} service <span class="muted">({{ cls.label }})</span></h1>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="type" value="{{ cls.type }}">
+
+  <label>Name
+    <input name="name" value="{{ name }}" required placeholder="e.g. supabase-main">
+  </label>
+
+  {% for f in cls.fields %}
+    <label>{{ f.label }}{% if f.required %} *{% endif %}
+      {% set value = '' if f.secret else (cfg.get(f.name, f.default)) %}
+      {% set ph = '(stored - leave blank to keep)' if (f.secret and f.name in stored) else f.placeholder %}
+      {% if f.kind == 'select' %}
+        <select name="{{ f.name }}">
+          {% for c in f.choices %}<option {{ 'selected' if c == value }}>{{ c }}</option>{% endfor %}
+        </select>
+      {% elif f.kind == 'textarea' %}
+        <textarea name="{{ f.name }}" rows="3" placeholder="{{ ph }}" autocomplete="off">{{ value }}</textarea>
+      {% else %}
+        <input name="{{ f.name }}" value="{{ value }}" placeholder="{{ ph }}" autocomplete="off"
+               {% if f.secret %}type="password"{% endif %}>
+      {% endif %}
+      {% if f.help %}<small class="muted">{{ f.help }}</small>{% endif %}
+    </label>
+  {% endfor %}
+
+  <div class="toolbar">
+    <button class="btn primary" name="action" value="save">Save</button>
+    <button class="btn" name="action" value="test" formnovalidate>Test connection</button>
+    <a class="btn" href="{{ url_for('main.index') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

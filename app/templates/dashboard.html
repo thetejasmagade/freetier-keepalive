@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if failing %}
+<div class="alert">
+  <strong>{{ failing|length }} service{{ 's' if failing|length != 1 }} failing:</strong>
+  {{ failing|map(attribute='s.name')|join(', ') }}
+</div>
+{% endif %}
+
+<section class="summary">
+  <div><span class="k">Last run</span><span class="v">{{ last_run|ts }}</span></div>
+  <div><span class="k">Next due</span><span class="v">{{ next_due|ts if next_due else 'on next cron call' }}</span></div>
+  <div><span class="k">OK</span><span class="v ok">{{ counts.ok }}</span></div>
+  <div><span class="k">Failing</span><span class="v fail">{{ counts.fail }}</span></div>
+  <div><span class="k">Pending / off</span><span class="v">{{ counts.pending }} / {{ counts.disabled }}</span></div>
+</section>
+
+<div class="toolbar">
+  <a class="btn primary" href="{{ url_for('main.service_new') }}">Add service</a>
+  <form method="post" action="{{ url_for('main.run_all_now') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn">Run all now</button>
+  </form>
+</div>
+
+{% if not rows %}
+  <p class="muted">No services yet. Add your first one.</p>
+{% else %}
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr><th>Service</th><th>Status</th><th>Last 5 checks</th><th>Last result</th><th></th></tr>
+  </thead>
+  <tbody>
+  {% for r in rows %}
+    <tr class="{{ r.status }}">
+      <td><strong>{{ r.s.name }}</strong><br><span class="muted">{{ r.type_label }}</span></td>
+      <td><span class="badge {{ r.status }}">{{ r.status }}</span></td>
+      <td class="dots">
+        {% for h in r.history %}
+          <span class="dot {{ 'ok' if h.ok else 'fail' }}"
+                title="{{ h.checked_at|ts }}{% if h.latency_ms is not none %} - {{ h.latency_ms }} ms{% endif %}{% if h.error %} - {{ h.error }}{% endif %}"></span>
+        {% else %}<span class="muted">-</span>{% endfor %}
+      </td>
+      <td class="muted">
+        {% if r.last %}
+          {{ r.last.checked_at|ts }}{% if r.last.ok %} &middot; {{ r.last.latency_ms }} ms{% endif %}
+          {% if r.last.error %}<br><span class="err">{{ r.last.error }}</span>{% endif %}
+        {% else %}-{% endif %}
+      </td>
+      <td class="actions">
+        <form method="post" action="{{ url_for('main.service_run', service_id=r.s.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn sm">Run</button></form>
+        <a class="btn sm" href="{{ url_for('main.service_edit', service_id=r.s.id) }}">Edit</a>
+        <form method="post" action="{{ url_for('main.service_toggle', service_id=r.s.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn sm">{{ 'Disable' if r.s.enabled else 'Enable' }}</button></form>
+        <form method="post" action="{{ url_for('main.service_delete', service_id=r.s.id) }}"
+              onsubmit="return confirm('Delete {{ r.s.name }}?')">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn sm danger">Delete</button></form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endif %}
+{% endblock %}
