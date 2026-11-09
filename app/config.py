@@ -14,7 +14,7 @@ class Settings:
         self.secret_key = os.environ.get("SECRET_KEY", "")
         self.admin_password = os.environ.get("ADMIN_PASSWORD", "")
         self.run_token = os.environ.get("RUN_TOKEN", "")
-        self.run_interval_minutes = _int("RUN_INTERVAL_MINUTES", 60)
+        self.run_interval_minutes = _int("RUN_INTERVAL_MINUTES", 1440)
         self.min_run_gap_minutes = _int("MIN_RUN_GAP_MINUTES", 30)
         self.check_timeout = _int("CHECK_TIMEOUT_SECONDS", 15)
         self.check_retries = _int("CHECK_RETRIES", 2)
