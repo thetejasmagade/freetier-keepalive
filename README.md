@@ -1,4 +1,4 @@
-# freetier-keepalive
+# freetier-keepalive 🛎️
 
 Free-tier databases/services get paused when nobody uses them: Supabase pauses projects after about a week
 without activity, and Aiven, MongoDB Atlas, Neon and others do something similar. freetier-keepalive is a
