@@ -2,9 +2,9 @@ name = "auto-cron-trigger"
 main = "src/index.js"
 compatibility_date = "2026-10-01"
 
-# Every hour, on the hour (UTC). For testing, use "* * * * *" (every minute).
+# Once a day at 00:00 UTC. For testing, use "* * * * *" (every minute).
 [triggers]
-crons = ["0 * * * *"]
+crons = ["0 0 * * *"]
 
 [vars]
 APP_URL = "https://your-app.onrender.com"

@@ -41,7 +41,7 @@ def health():
 
 @bp.get("/cron/run")
 def cron_run():
-    """Called hourly by the Cloudflare Worker cron. Runs all checks and replies when done."""
+    """Called daily by the Cloudflare Worker cron. Runs all checks and replies when done."""
     if not token_ok():
         abort(401)
     return jsonify(runner.run_all(respect_gap=True, trigger="cron"))

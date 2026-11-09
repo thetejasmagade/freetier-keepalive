@@ -1,7 +1,7 @@
 # Auto-Cron
 
 A small Flask service that connects to your free-tier databases (Supabase, Aiven, MongoDB Atlas, ...)
-every hour so the providers don't pause them. Services are added from the web UI, with no code change
+once a day so the providers don't pause them. Services are added from the web UI, with no code change
 or redeploy.
 
 See [plans/PLAN.md](plans/PLAN.md) for the design.
@@ -9,7 +9,7 @@ See [plans/PLAN.md](plans/PLAN.md) for the design.
 ## How it works
 
 ```
-Cloudflare Worker cron (hourly)
+Cloudflare Worker cron (daily, 00:00 UTC)
       │  GET /cron/run   (Authorization: Bearer RUN_TOKEN)
       ▼
 Flask app on Render free  ──wakes if asleep (up to ~1 min)
@@ -19,7 +19,7 @@ Supabase Postgres  ◄── stores services, encrypted secrets, last 5 results
 ```
 
 - The Worker waits up to 3 minutes for a reply and retries once, so Render's slow wake-up is fine.
-- Render sleeps about 15 minutes after each run, so it uses roughly 200 of the 750 free hours a month.
+- Render sleeps about 15 minutes after each run, so it uses only about 8 of the 750 free hours a month.
 - The dashboard (`/`) shows an alert banner for failing services plus the last 5 results per service.
 - Each run also counts as activity on the Supabase project that holds the app's data.
 
@@ -39,7 +39,7 @@ Supabase Postgres  ◄── stores services, encrypted secrets, last 5 results
   `CONTROL_DB_URL`, `SECRET_KEY` (the blueprint generates it), `ADMIN_PASSWORD`, `RUN_TOKEN`.
 - Open `https://<app>.onrender.com`, log in with `ADMIN_PASSWORD`, and click **Add service**.
 
-### 3. Cloudflare Worker (hourly trigger)
+### 3. Cloudflare Worker (daily trigger)
 In [cloudflare/](cloudflare/):
 1. Set `APP_URL` in [cloudflare/wrangler.toml](cloudflare/wrangler.toml) to your Render URL.
 2. `npx wrangler login`

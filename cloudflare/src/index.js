@@ -1,4 +1,4 @@
-// Cloudflare Worker that triggers the Flask app's hourly run.
+// Cloudflare Worker that triggers the Flask app's daily run.
 // The schedule is in wrangler.toml. APP_URL is a var; RUN_TOKEN is a Worker secret.
 //
 // Render's free instance sleeps when idle and can take up to a minute to wake,
