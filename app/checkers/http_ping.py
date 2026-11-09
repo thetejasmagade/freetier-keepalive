@@ -24,7 +24,7 @@ class HttpChecker(Checker):
               help="Stored encrypted, e.g. apikey: ..."),
     ]
 
-    def check(self, cfg: dict, timeout: int) -> None:
+    def check(self, cfg: dict, timeout: int):
         expected = int(cfg.get("expect_status") or 200)
         resp = requests.request(
             cfg.get("method") or "GET",
@@ -34,3 +34,8 @@ class HttpChecker(Checker):
         )
         if resp.status_code != expected:
             raise RuntimeError(f"expected HTTP {expected}, got {resp.status_code}")
+        body = resp.text.strip()
+        out = f"HTTP {resp.status_code} {resp.reason}"
+        if body:
+            out += "\n" + body[:500] + (" ..." if len(body) > 500 else "")
+        return out

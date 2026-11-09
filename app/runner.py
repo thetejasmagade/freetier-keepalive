@@ -9,18 +9,30 @@ from .config import settings
 log = logging.getLogger(__name__)
 
 
-def _clean_error(exc: Exception, cfg: dict, checker) -> str:
-    msg = f"{type(exc).__name__}: {exc}"
+def _mask(msg: str, cfg: dict, checker) -> str:
+    """Hide secret field values and URL passwords."""
     for f in checker.fields:
         val = cfg.get(f.name)
         if f.secret and val and len(val) >= 4:
             msg = msg.replace(val, "***")
-    msg = re.sub(r"(://[^:/\s@]+:)[^@\s]+@", r"\1***@", msg)
-    return msg[:500]
+    return re.sub(r"(://[^:/\s@]+:)[^@\s]+@", r"\1***@", msg)
+
+
+def _clean_error(exc: Exception, cfg: dict, checker) -> str:
+    return _mask(f"{type(exc).__name__}: {exc}", cfg, checker)[:500]
+
+
+def _clean_output(value, cfg: dict, checker):
+    if value is None:
+        return None
+    return _mask(checkers.to_text(value), cfg, checker)[:2000]
 
 
 def check_config(type_: str, cfg: dict, retries: int | None = None) -> dict:
-    """Run one check (with retries). Never raises. Returns {ok, latency_ms, error}."""
+    """Run one check (with retries). Never raises. Returns {ok, latency_ms, error, output}.
+
+    `output` is the checker's description of what the service replied (None if it gave none).
+    """
     cls = checkers.get(type_)
     if cls is None:
         return {"ok": False, "latency_ms": None, "error": f"Unknown service type '{type_}'"}
@@ -30,8 +42,9 @@ def check_config(type_: str, cfg: dict, retries: int | None = None) -> dict:
     for attempt in range(attempts):
         start = time.monotonic()
         try:
-            checker.check(cfg, settings.check_timeout)
-            return {"ok": True, "latency_ms": int((time.monotonic() - start) * 1000), "error": None}
+            reply = checker.check(cfg, settings.check_timeout)
+            return {"ok": True, "latency_ms": int((time.monotonic() - start) * 1000), "error": None,
+                    "output": _clean_output(reply, cfg, cls)}
         except Exception as exc:  # noqa: BLE001 - any failure is a failed check
             error = _clean_error(exc, cfg, cls)
             if attempt < attempts - 1:
@@ -59,6 +72,7 @@ def _run(services: list) -> list:
             res = fut.result()
         else:
             res = {"ok": False, "latency_ms": None, "error": "Timed out (run time budget exceeded)"}
+        res.pop("output", None)  # replies are only shown on "Test connection", never stored
         repo.add_result(svc["id"], res["ok"], res["latency_ms"], res["error"])
         out.append({"name": svc["name"], **res})
     ex.shutdown(wait=False, cancel_futures=True)

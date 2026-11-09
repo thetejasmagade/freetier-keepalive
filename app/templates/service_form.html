@@ -33,5 +33,24 @@
     <button class="btn" name="action" value="test" formnovalidate>Test connection</button>
     <a class="btn" href="{{ url_for('main.index') }}">Cancel</a>
   </div>
+
+  {% if test %}
+  <section id="test-result" class="test-result {{ 'ok' if test.ok else 'fail' }}">
+    <h2>Test result</h2>
+    {% if test.ok %}
+      <p><span class="badge ok">ok</span> Connected in {{ test.latency_ms }} ms</p>
+      {% if test.output %}
+        <p class="muted">Service replied:</p>
+        <pre>{{ test.output }}</pre>
+      {% endif %}
+    {% else %}
+      <p><span class="badge fail">failed</span></p>
+      <pre class="err">{{ test.error }}</pre>
+    {% endif %}
+  </section>
+  {% endif %}
 </form>
+{% if test %}
+<script>document.getElementById("test-result").scrollIntoView({block: "nearest"});</script>
+{% endif %}
 {% endblock %}

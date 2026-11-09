@@ -30,6 +30,13 @@ button.link { background: none; border: 0; color: var(--accent); cursor: pointer
 .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
 .toolbar form, .actions form { margin: 0; display: inline; }
 .flash { padding: 10px 14px; border-radius: 6px; margin-bottom: 12px; border: 1px solid var(--line); background: var(--card); }
+.test-result { margin-top: 16px; padding: 12px 14px; border: 1px solid var(--line); border-left-width: 4px; border-radius: 6px; }
+.test-result.ok { border-left-color: var(--ok); }
+.test-result.fail { border-left-color: var(--fail); }
+.test-result h2 { margin: 0 0 8px; font-size: 1em; }
+.test-result p { margin: 4px 0; }
+.test-result pre { margin: 6px 0 0; padding: 8px 10px; background: var(--bg, transparent); border: 1px solid var(--line);
+                   border-radius: 4px; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 22em; overflow-y: auto; }
 .flash.error { border-color: var(--fail); color: var(--fail); }
 .alert { background: color-mix(in srgb, var(--fail) 14%, var(--card)); border: 1px solid var(--fail);
          color: var(--fail); padding: 12px 14px; border-radius: 8px; margin-bottom: 12px; }

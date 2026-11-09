@@ -136,14 +136,13 @@ def service_new():
 
     cfg, secrets = _read_form(cls) if request.method == "POST" else ({}, {})
     name = request.form.get("name", "").strip()
+    test = None  # "Test connection" result, shown below the form
     if request.method == "POST":
         problems = (["Name"] if not name else []) + _missing(cls, cfg, secrets, {})
         if problems:
             flash("Required: " + ", ".join(problems), "error")
         elif request.form.get("action") == "test":
-            res = runner.check_config(cls.type, {**cfg, **secrets}, retries=0)
-            flash("Connection OK." if res["ok"] else "Failed: " + res["error"],
-                  "info" if res["ok"] else "error")
+            test = runner.check_config(cls.type, {**cfg, **secrets}, retries=0)
         else:
             try:
                 repo.create_service(name, cls.type, cfg, secrets)
@@ -153,7 +152,7 @@ def service_new():
                 flash(f"Added '{name}'. It will be included in the next run.", "info")
                 return redirect(url_for("main.index"))
     return render_template("service_form.html", cls=cls, name=name, cfg=cfg, editing=False,
-                           stored=set())
+                           stored=set(), test=test)
 
 
 @bp.route("/services/<int:service_id>/edit", methods=["GET", "POST"])
@@ -165,6 +164,7 @@ def service_edit(service_id: int):
         abort(404)
     stored = repo.secrets_of(service)
     cfg, name = service["config"], service["name"]
+    test = None  # "Test connection" result, shown below the form
     if request.method == "POST":
         cfg, secrets = _read_form(cls)
         name = request.form.get("name", "").strip()
@@ -173,9 +173,7 @@ def service_edit(service_id: int):
             flash("Required: " + ", ".join(problems), "error")
         elif request.form.get("action") == "test":
             merged = {**stored, **{k: v for k, v in secrets.items() if v}}
-            res = runner.check_config(cls.type, {**cfg, **merged}, retries=0)
-            flash("Connection OK." if res["ok"] else "Failed: " + res["error"],
-                  "info" if res["ok"] else "error")
+            test = runner.check_config(cls.type, {**cfg, **merged}, retries=0)
         else:
             try:
                 repo.update_service(service_id, name, cfg, secrets)
@@ -185,7 +183,7 @@ def service_edit(service_id: int):
                 flash("Saved.", "info")
                 return redirect(url_for("main.index"))
     return render_template("service_form.html", cls=cls, name=name, cfg=cfg, editing=True,
-                           stored={k for k, v in stored.items() if v})
+                           stored={k for k, v in stored.items() if v}, test=test)
 
 
 @bp.post("/services/<int:service_id>/delete")
